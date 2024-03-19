@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { addNewTask, deleteTask, getTasks, updateTask } from '../firebase/taskController';
-
+import { AppContext } from '../App';
 
 const task = {
     title: "Este es el título",
@@ -17,8 +17,10 @@ const TaskList = () => {
     const [tasks,setTasks] = useState([]);
     const [mode,setMode] = useState("add");
 
+    const {user} = useContext(AppContext);
+
     const createNewTask = async () => {
-        await addNewTask(task);
+        await addNewTask(task).catch(e => console.log("Error!!!!!"));
         setTask({title:"",description:""});
         initializeTasks();
         
@@ -61,6 +63,7 @@ const TaskList = () => {
                 type="text" 
                 value={task.title}
                 placeholder='Título'
+                disabled={!user}
                 className=' border shadow outline-none focus:ring ring-sky-200 rounded px-2 py-1 w-full'
                 onChange={e => setTask({...task, title: e.target.value})} 
             />
@@ -69,11 +72,13 @@ const TaskList = () => {
                 rows={3} 
                 value={task.description}
                 placeholder='Descripción'
+                disabled={!user}
                 className=' border shadow outline-none focus:ring ring-sky-200 rounded px-2 py-1 w-full'
                 onChange={e => setTask({...task, description: e.target.value})} 
             />
             <button 
-                className=' bg-sky-400 text-white rounded shadow py-1 hover:bg-sky-500 transition font-semibold'
+                className=' bg-sky-400 text-white rounded shadow py-1 hover:bg-sky-500 transition font-semibold disabled:bg-sky-200'
+                disabled={!user}
                 onClick={() => mode === "add" ? createNewTask() : updateExistingTask()}
                 >   
                  {mode === "add" ? "Añadir" : "Actualizar"}
@@ -96,6 +101,10 @@ const TaskList = () => {
                 </div>
                 ))}
         </div>
+        {!user && <p className=' text-red-600'
+        >
+            Necesitas estar logueado para poder leer y añadir tareas
+        </p>}
     </div>
   )
 }
